@@ -55,11 +55,13 @@ entries = SudokuInterface(sudokuFrame)
 def get_solution():
     sudoku = entries.make_sudoku()
     answer = sudoku.solve()
-    Label(root, text=answer, font="Arial").grid()
+    answerLabel.configure(text=answer)
 
 
 solveButton = Button(root, text="Solve", command=get_solution)
 solveButton.grid()
 
+answerLabel = Label(root, text="")
+answerLabel.grid()
 
 root.mainloop()
