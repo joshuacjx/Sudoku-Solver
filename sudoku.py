@@ -1,25 +1,51 @@
-class Sudoku(object):
-    def __init__(self, puzzle):
-        self.puzzle = puzzle
+from enum import Enum
+
+
+class SudokuState(Enum):
+    NOT_SOLVED_YET = 0
+    SOLVED = 1
+    UNSOLVABLE = 2
+
+
+class Sudoku:
+    def __init__(self, grid):
+        self.grid = grid
+        self.state = SudokuState.NOT_SOLVED_YET
+        self.invalid_data = dict()
 
     def solve(self):
         initial_assignment = self.get_initial_assignment()
         if not initial_assignment.is_valid():
-            invalid_assigment_data = initial_assignment.get_invalid_assignment()
-            positions = invalid_assigment_data["conflicting-positions"]
-            value = invalid_assigment_data["value-assigned"]
-            errorString = "Cannot be solved!" + '\n' \
-                          + str(positions[0]) + " and " + str(positions[1])\
-                          + " cannot both be " + str(value) + "."
-            return errorString
+            self.state = SudokuState.UNSOLVABLE
+            self.invalid_data = initial_assignment.get_invalid_assignment()
+            return self.get_invalid_assignment_message()
         completed_assignment = backtrack(initial_assignment, self)
+        self.state = SudokuState.SOLVED
         return Sudoku.get_answer_string(self.get_answer_grid(completed_assignment))
+
+    def get_invalid_assignment(self):
+        if not self.invalid_data:
+            return None
+        return self.invalid_data
+
+    def get_invalid_assignment_message(self):
+        if not self.invalid_data:
+            return None
+        positions = self.invalid_data["conflicting-positions"]
+        value = self.invalid_data["value-assigned"]
+        errorString = "Cannot be solved!" + '\n' \
+                      + str(positions[0]) + " and " + str(positions[1]) \
+                      + " cannot both be " + str(value) + "."
+        return errorString
+
+    def get_state(self):
+        return self.state
 
     def get_initial_assignment(self):
         initial_assignment = Assignment()
         for row in range(9):
             for col in range(9):
-                val = self.puzzle[row][col]
+                val = self.grid[row][col]
                 if val is not 0:
                     initial_assignment.add((row, col), val)
         return initial_assignment
@@ -61,12 +87,25 @@ class Sudoku(object):
         return positions
 
 
-class Assignment(object):
+class Assignment:
+    """Encapsulates the state of assignment of values to positions in a Sudoku grid."""
+
     def __init__(self):
         self.pos_to_value = dict()
+        """Maps every position (row, col) to a value within the range [0, 9]."""
+
         self.pos_to_domain = dict()
+        """Maps position (row, col) to the set of values it can possibly 
+        take given the current state of assignment."""
+
         self.val_to_num_constrained = dict()
+        """Maps values (within the range [0, 9]) to the number of positions 
+        unable to be assigned to that value."""
+
         self.constrained = dict()
+        """Maps position (row, col) to a set of positions constrained by the 
+        position (i.e. same row, column or subgrid)."""
+
         self.initialize()
 
     def initialize(self):
@@ -175,7 +214,7 @@ def select_unassigned_pos(assignment, sudoku):
     min_num_remaining_value = 9
     for row in range(9):
         for col in range(9):
-            if sudoku.puzzle[row][col] is 0:
+            if sudoku.grid[row][col] is 0:
                 if not assignment.is_assigned((row, col)):
                     num_remaining_value = len(assignment.get_domain((row, col)))
                     if num_remaining_value < min_num_remaining_value:

@@ -1,5 +1,5 @@
 from tkinter import *
-from solver import Sudoku
+from sudoku import Sudoku, SudokuState
 
 
 class SudokuInterface():
@@ -13,9 +13,12 @@ class SudokuInterface():
             for cl in range(9):
                 # Create a cell for that Sudoku entry
                 cell = Entry(frame, width=2, justify=CENTER)
+
                 # Configure the cell to conform to input validation
                 cell.config(validate="key", validatecommand=(register, '%P'))
+
                 cells[rw][cl] = cell
+
                 # Display the cell onto the GUI
                 cell.grid(row=rw, column=cl)
         return cells
@@ -39,6 +42,15 @@ class SudokuInterface():
                     puzzle[rw][cl] = int(input)
         return Sudoku(puzzle)
 
+    def highlight(self, positions):
+        for position in positions:
+            self.cells[position[0]][position[1]].config(fg="red")
+
+    def unhighlight_all(self):
+        for row in range(9):
+            for col in range(9):
+                self.cells[row][col].config(fg="black")
+
 
 root = Tk()
 root.title("Sudoku Solver")
@@ -53,8 +65,12 @@ entries = SudokuInterface(sudokuFrame)
 
 
 def get_solution():
+    entries.unhighlight_all()
     sudoku = entries.make_sudoku()
     answer = sudoku.solve()
+    if sudoku.get_state() is SudokuState.UNSOLVABLE:
+        conflicting_positions = sudoku.get_invalid_assignment()["conflicting-positions"]
+        entries.highlight(conflicting_positions)
     answerLabel.configure(text=answer)
 
 
