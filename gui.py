@@ -1,5 +1,5 @@
 from tkinter import *
-from solver import Sudoku
+from sudoku import Sudoku, SudokuState
 
 
 class SudokuInterface():
@@ -13,9 +13,12 @@ class SudokuInterface():
             for cl in range(9):
                 # Create a cell for that Sudoku entry
                 cell = Entry(frame, width=2, justify=CENTER)
+
                 # Configure the cell to conform to input validation
                 cell.config(validate="key", validatecommand=(register, '%P'))
+
                 cells[rw][cl] = cell
+
                 # Display the cell onto the GUI
                 cell.grid(row=rw, column=cl)
         return cells
@@ -39,10 +42,18 @@ class SudokuInterface():
                     puzzle[rw][cl] = int(input)
         return Sudoku(puzzle)
 
+    def highlight(self, positions):
+        for position in positions:
+            self.cells[position[0]][position[1]].config(fg="red")
+
+    def unhighlight_all(self):
+        for row in range(9):
+            for col in range(9):
+                self.cells[row][col].config(fg="black")
+
 
 root = Tk()
 root.title("Sudoku Solver")
-root.geometry("500x500+0+0")
 
 instruction = Label(root, text="Input your Sudoku puzzle below!")
 instruction.grid(row=0)
@@ -52,24 +63,21 @@ sudokuFrame.grid(row=1)
 
 entries = SudokuInterface(sudokuFrame)
 
-# Set empty string as answer label first
-answerLabel = Label(root, text="")
-answerLabel.grid()
-
 
 def get_solution():
+    entries.unhighlight_all()
     sudoku = entries.make_sudoku()
-    sudoku.solve()
+    answer = sudoku.solve()
+    if sudoku.get_state() is SudokuState.UNSOLVABLE:
+        conflicting_positions = sudoku.get_invalid_assignment()["conflicting-positions"]
+        entries.highlight(conflicting_positions)
+    answerLabel.configure(text=answer)
 
-    solvedMessage = Label(root, text="Solved!")
-    solvedMessage.grid()
-
-    answer = sudoku.get_answer_as_string()
-    answerLabel = Label(root, text=answer)
-    answerLabel.grid()
 
 solveButton = Button(root, text="Solve", command=get_solution)
 solveButton.grid()
 
+answerLabel = Label(root, text="")
+answerLabel.grid()
 
 root.mainloop()
