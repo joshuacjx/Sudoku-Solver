@@ -42,7 +42,6 @@ class SudokuInterface():
 
 root = Tk()
 root.title("Sudoku Solver")
-root.geometry("500x500+0+0")
 
 instruction = Label(root, text="Input your Sudoku puzzle below!")
 instruction.grid(row=0)
@@ -52,21 +51,12 @@ sudokuFrame.grid(row=1)
 
 entries = SudokuInterface(sudokuFrame)
 
-# Set empty string as answer label first
-answerLabel = Label(root, text="")
-answerLabel.grid()
-
 
 def get_solution():
     sudoku = entries.make_sudoku()
-    sudoku.solve()
+    answer = sudoku.solve()
+    Label(root, text=answer, font="Arial").grid()
 
-    solvedMessage = Label(root, text="Solved!")
-    solvedMessage.grid()
-
-    answer = sudoku.get_answer_as_string()
-    answerLabel = Label(root, text=answer)
-    answerLabel.grid()
 
 solveButton = Button(root, text="Solve", command=get_solution)
 solveButton.grid()
