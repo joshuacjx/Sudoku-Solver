@@ -93,6 +93,10 @@ class Assignment:
     NUM_POSITIONS = 81
     ALL_POSITIONS = sum([[(row, col) for col in range(9)] for row in range(9)], [])
 
+    ROWS_TO_POSITIONS = {row: set((row, col) for col in range(9)) for row in range(9)}
+    COLS_TO_POSITIONS = {col: set((row, col) for row in range(9)) for col in range(9)}
+    SUBGRIDS_TO_POSITIONS = {subgrid: Sudoku.get_positions_at_subgrid(subgrid) for subgrid in range(9)}
+
     def __init__(self):
         self.pos_to_value = dict()
         """Maps every position (row, col) to a value within the range [0, 9]."""
@@ -106,44 +110,43 @@ class Assignment:
         """Maps values (within the range [0, 9]) to the number of positions 
         unable to be assigned to that value."""
 
-        self.constrained = dict()
+        self.constrained = {(row, col): (Assignment.ROWS_TO_POSITIONS[row]
+                                         | Assignment.COLS_TO_POSITIONS[col]
+                                         | Assignment.SUBGRIDS_TO_POSITIONS[Sudoku.get_subgrid_index(row, col)]
+                                         - {row, col})
+                            for (row, col) in Assignment.ALL_POSITIONS}
         """Maps position (row, col) to a set of positions constrained by the 
         position (i.e. same row, column or subgrid)."""
 
-        rows_to_positions = {row: set((row, col) for col in range(9)) for row in range(9)}
-        cols_to_positions = {col: set((row, col) for row in range(9)) for col in range(9)}
-        subgrids_to_positions = {subgrid: Sudoku.get_positions_at_subgrid(subgrid) for subgrid in range(9)}
+    def is_empty(self):
+        """Returns true if positions have been assigned values."""
+        return not self.pos_to_value
 
-        self.constrained = {(row, col): (rows_to_positions[row]
-                                         | cols_to_positions[col]
-                                         | subgrids_to_positions[Sudoku.get_subgrid_index(row, col)])
-            for (row, col) in Assignment.ALL_POSITIONS}
+    def is_complete(self):
+        """Returns true if all positions have been assigned values."""
+        return len(self.pos_to_value) is Assignment.NUM_POSITIONS
+
+    def is_valid(self):
+        """Returns true if there are no conflicting positions."""
+        for pos in self.pos_to_value:
+            for other_pos in self.pos_to_value:
+                if self.is_conflicting(pos, other_pos):
+                    return False
+        return True
+
+    def is_assigned(self, pos):
+        """Returns true if the given position has been assigned a value."""
+        return pos in self.pos_to_value
 
 
     def get_domain(self, pos):
         return self.pos_to_domain[pos]
-
-    def is_assigned(self, pos):
-        return pos in self.pos_to_value
-
-    def is_complete(self):
-        return len(self.pos_to_value) is Assignment.NUM_POSITIONS
-
-    def is_empty(self):
-        return not self.pos_to_value
 
     def is_conflicting(self, pos, other_pos):
         is_different_pos = pos is not other_pos
         is_constrained = other_pos in self.constrained[pos]
         is_same_value = self.pos_to_value[pos] is self.pos_to_value[other_pos]
         return is_different_pos and is_constrained and is_same_value
-
-    def is_valid(self):
-        for pos in self.pos_to_value:
-            for other_pos in self.pos_to_value:
-                if self.is_conflicting(pos, other_pos):
-                    return False
-        return True
 
     def get_invalid_assignment(self):
         if self.is_valid():
