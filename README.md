@@ -3,6 +3,7 @@ This is a simple Python program that is able to solve any partially-filled Sudok
 
 ## Usage Instructions
 Go to the 'Releases' section and download the .zip file corresponding to your OS. Unzip the file and double-click on the executable `Sudoku Solver V1` to run it.
+
 For MacOS users, your computer might not allow you to run the executable due to security reasons. If this happens, go to `System Preferences > Security & Privacy > Open Anyway` to allow your computer to open the app.
 
 Alternatively, clone this repository in your Desktop. Next, run `python gui.py` in your Command Line.
