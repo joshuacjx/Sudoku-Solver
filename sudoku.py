@@ -90,6 +90,9 @@ class Sudoku:
 class Assignment:
     """Encapsulates the state of assignment of values to positions in a Sudoku grid."""
 
+    NUM_POSITIONS = 81
+    ALL_POSITIONS = sum([[(row, col) for col in range(9)] for row in range(9)], [])
+
     def __init__(self):
         self.pos_to_value = dict()
         """Maps every position (row, col) to a value within the range [0, 9]."""
@@ -97,8 +100,9 @@ class Assignment:
         self.pos_to_domain = dict()
         """Maps position (row, col) to the set of values it can possibly 
         take given the current state of assignment."""
+        [self.pos_to_domain.setdefault(pos, set(range(1, 10))) for pos in Assignment.ALL_POSITIONS]
 
-        self.val_to_num_constrained = dict()
+        self.val_to_num_constrained = dict().fromkeys(range(1, 10), 0)
         """Maps values (within the range [0, 9]) to the number of positions 
         unable to be assigned to that value."""
 
@@ -106,29 +110,15 @@ class Assignment:
         """Maps position (row, col) to a set of positions constrained by the 
         position (i.e. same row, column or subgrid)."""
 
-        self.initialize()
+        rows_to_positions = {row: set((row, col) for col in range(9)) for row in range(9)}
+        cols_to_positions = {col: set((row, col) for row in range(9)) for col in range(9)}
+        subgrids_to_positions = {subgrid: Sudoku.get_positions_at_subgrid(subgrid) for subgrid in range(9)}
 
-    def initialize(self):
-        for row in range(9):
-            for col in range(9):
-                self.pos_to_domain[(row, col)] = set(range(1, 10))
+        self.constrained = {(row, col): (rows_to_positions[row]
+                                         | cols_to_positions[col]
+                                         | subgrids_to_positions[Sudoku.get_subgrid_index(row, col)])
+            for (row, col) in Assignment.ALL_POSITIONS}
 
-        for val in range(1, 10):
-            self.val_to_num_constrained[val] = 0
-
-        rows = dict()
-        for row in range(9):
-            rows[row] = {(row, col) for col in range(9)}
-        cols = dict()
-        for col in range(9):
-            cols[col] = {(row, col) for row in range(9)}
-        subgrids = dict()
-        for subgrid in range(9):
-            subgrids[subgrid] = Sudoku.get_positions_at_subgrid(subgrid)
-        for row in range(9):
-            for col in range(9):
-                subgrid = Sudoku.get_subgrid_index(row, col)
-                self.constrained[(row, col)] = (rows[row] | cols[col] | subgrids[subgrid])
 
     def get_domain(self, pos):
         return self.pos_to_domain[pos]
@@ -137,7 +127,7 @@ class Assignment:
         return pos in self.pos_to_value
 
     def is_complete(self):
-        return len(self.pos_to_value) is 81
+        return len(self.pos_to_value) is Assignment.NUM_POSITIONS
 
     def is_empty(self):
         return not self.pos_to_value
