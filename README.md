@@ -1,5 +1,5 @@
 # Sudoku Solver
-This is a simple Python script that is able to solve any partially-filled Sudoku input instantly.
+This is a simple Python program that is able to solve any partially-filled Sudoku input instantly.
 
 ## Usage Instructions
 Go to the 'Releases' section and download the .zip file corresponding to your OS. Unzip the file and double-click on the executable `Sudoku Solver V1` to run it.
