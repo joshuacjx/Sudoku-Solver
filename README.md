@@ -2,7 +2,10 @@
 This is a simple Python script that is able to solve any partially-filled Sudoku input instantly.
 
 ## Usage Instructions
-Clone this repository in your Desktop. Next, run `python gui.py` in your Command Line.
+Go to the 'Releases' section and download the .zip file corresponding to your OS. Unzip the file and double-click on the executable `Sudoku Solver V1` to run it.
+For MacOS users, your computer might not allow you to run the executable due to security reasons. If this happens, go to `System Preferences > Security & Privacy > Open Anyway` to allow your computer to open the app.
+
+Alternatively, clone this repository in your Desktop. Next, run `python gui.py` in your Command Line.
 
 ## GUI
 The Graphic User Interface (GUI) is made using the Python Tkinter library. Its source code is found in the module `gui.py`.
